@@ -47,7 +47,7 @@
   "poll_interval_seconds": 30,
   "history_fetch_window_seconds": 60,
   "history_rounds": 5,
-  "brain_model": "default",
+  "brain_model": "openclaw",
   "max_reply_tokens": 500,
   "stop_exact_keywords": [
     "STOP"

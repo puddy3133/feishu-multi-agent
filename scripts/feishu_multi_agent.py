@@ -43,10 +43,27 @@ def load_config() -> dict:
         if path.exists():
             with open(path, "r", encoding="utf-8") as f:
                 raw = json.load(f)
-            return {k: v for k, v in raw.items() if not k.startswith("_")}
+            config = {k: v for k, v in raw.items() if not k.startswith("_")}
+            normalize_config(config)
+            return config
     raise FileNotFoundError(
         f"配置文件未找到。请将 {TEMPLATE_CONFIG_PATH} 复制到 {RUNTIME_CONFIG_PATH} 并填写配置。"
     )
+
+
+def normalize_config(config: dict):
+    """Keep older relay configs working on newer OpenClaw gateways."""
+    if config.get("brain_model") in {None, "", "default"}:
+        config["brain_model"] = "openclaw"
+
+    if "stop_exact_keywords" not in config and "stop_keywords" in config:
+        config["stop_exact_keywords"] = config["stop_keywords"]
+
+    if "continue_keywords" not in config and "start_keywords" in config:
+        config["continue_keywords"] = config["start_keywords"]
+
+    if "round_patterns" not in config and "round_pattern" in config:
+        config["round_patterns"] = [config["round_pattern"]]
 
 
 def cfg(config: dict, key: str, default=None):
@@ -233,7 +250,7 @@ def call_brain(
 ) -> str | None:
     api_url = cfg(config, "self_api_url", "http://127.0.0.1:18789")
     api_key = cfg(config, "self_token", "")
-    model = cfg(config, "brain_model", "default")
+    model = cfg(config, "brain_model", "openclaw")
     max_tok = cfg(config, "max_reply_tokens", 500)
     history_limit = cfg(config, "history_rounds", 5)
 
